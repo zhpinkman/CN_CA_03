@@ -6,10 +6,9 @@ import time
 
 from P2PNode import P2PNode
 
-NODES = 6
-NEIGHBORS = 3
+
 UDP_IP = "localhost"
-UDP_PORTs = [9001, 9002, 9003, 9004, 9005, 9006]
+UDP_PORTs = [9001, 9002, 9003, 9004, 9005, 9006]  # NODES = 6
 
 
 def p2p_task(udp_ip, port):
