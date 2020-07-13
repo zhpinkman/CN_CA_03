@@ -11,7 +11,7 @@ UDP_PORTs = [9001, 9002, 9003, 9004, 9005, 9006]
 
 
 def p2p_task(udp_ip, port):
-    p2p_node = P2PNode(udp_ip, port)
+    p2p_node = P2PNode(udp_ip, port, UDP_PORTs)
 
 
 def main():
@@ -19,7 +19,6 @@ def main():
     processes_list = []
     for port in UDP_PORTs:
         process = multiprocessing.Process(target=p2p_task, args=(UDP_IP, port,))
-        process.run()
         process.start()
         processes_list.append(process)
 
