@@ -8,14 +8,6 @@ UDP_IP = "localhost"
 UDP_PORTs = [9001, 9002, 9003, 9004, 9005, 9006]
 
 
-class P2PNode:
-    def __init__(self, port):
-        print("- Process on port " + str(port) + " Started")
-        sys.stdout.flush()
-        self.port = port
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.bind((UDP_IP, port))
-        # print(sock.getpeername())
 
 
 def p2p_task(port):
