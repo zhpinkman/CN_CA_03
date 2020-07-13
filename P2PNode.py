@@ -4,7 +4,9 @@ import multiprocessing
 import threading
 import time
 import pickle
+import time
 from UDP_utilities import send_to
+from Hello import Hello
 
 
 class P2PNode:
@@ -15,13 +17,15 @@ class P2PNode:
         self.possible_neighbors_ports = possible_neighbors_ports.remove(port)
         self.server_thread = None
         self.bidirectional_neighbors = []
+        self.last_receive_time = dict()
 
         self.init_server()
         self.init_timer_functions()
         # print(sock.getpeername())
 
     def init_server(self):
-        self.server_thread = threading.Thread(target=self.server_task, name='SERVER_TASK', args=(self.udp_ip, self.port,))
+        self.server_thread = threading.Thread(target=self.server_task, name='SERVER_TASK',
+                                              args=(self.udp_ip, self.port,))
         self.server_thread.start()
 
     def server_task(self, udp_ip, port):
@@ -29,8 +33,9 @@ class P2PNode:
         sock.bind((udp_ip, port))
         while True:
             data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
-            print(str(self.port) + " received message: ")
-            print(pickle.loads(data))
+            print(str(self.port) + " received message: ------------------------")
+            hello_packet: Hello = pickle.loads(data)
+            print(hello_packet.sender_last_send_time)
 
     def init_timer_functions(self):
         self.server_thread = threading.Thread(target=self.timer_task, name='TIMER_TASK')
@@ -39,5 +44,7 @@ class P2PNode:
     def timer_task(self):  # runs every second
         while True:
             # print("Sent something")
-            send_to("HeLLo from " + str(self.port), self.udp_ip, 9001)
+            epoch_time = int(time.time())
+            hello_packet = Hello(self.port, self.udp_ip, self.port, "udp", self.bidirectional_neighbors, epoch_time, 0)
+            send_to(hello_packet, self.udp_ip, 9001)
             time.sleep(1)
