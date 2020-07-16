@@ -30,7 +30,6 @@ class P2PNode:
         self.init_server()
         self.init_timer_functions()
 
-
     def init_server(self):
         self.server_thread = threading.Thread(target=self.server_task, name='SERVER_TASK',
                                               args=(self.udp_ip, self.port,))
