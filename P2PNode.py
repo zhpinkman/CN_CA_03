@@ -69,7 +69,7 @@ class P2PNode:
                 hello_packet = self.make_hello_packet(neighbor_port)
                 send_to(hello_packet, self.udp_ip, neighbor_port)
             if len(self.bidirectional_neighbors) < MAX_NEIGHBORS:
-                for host_port in self.unidirectional_neighbors:
+                for host_port in set().union(self.unidirectional_neighbors, self.temporary_neighbors):
                     hello_packet = self.make_hello_packet(host_port)
                     send_to(hello_packet, self.udp_ip, host_port)
             time.sleep(2)
