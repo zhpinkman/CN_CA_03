@@ -11,6 +11,7 @@ from Hello import Hello
 
 MAX_NEIGHBORS = 3
 DISCONNECT_TIME_LIMIT = 8
+PROB_THRESHOLD = 94
 
 
 class P2PNode:
@@ -40,6 +41,9 @@ class P2PNode:
         sock.bind((udp_ip, port))
         while True:
             data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
+            # ignore the packet with probablity of 5 in 100
+            if randint(0, 100) > PROB_THRESHOLD:
+                continue
             received_hello_packet: Hello = pickle.loads(data)
             self.last_receive_time[received_hello_packet.sender_id] = int(time.time())
             print(str(self.port) + " received message: ", end="")
