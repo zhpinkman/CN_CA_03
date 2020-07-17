@@ -28,7 +28,6 @@ class P2PNode:
         self.last_receive_time = dict()
         for port in self.possible_neighbors_ports:
             self.last_receive_time[port] = -1
-        self.pending_neighbor = None  # waiting for it's reply
 
         self.init_server()
         self.init_timer_functions()
@@ -50,8 +49,9 @@ class P2PNode:
             sender_port = received_hello_packet.sender_port
             self.last_receive_time[sender_port] = int(time.time())
             if sender_port not in self.bidirectional_neighbors:
-                if sender_port in self.temporarily_neighbors:
+                if sender_port in self.temporarily_neighbors and len(self.bidirectional_neighbors) < MAX_NEIGHBORS:
                     self.bidirectional_neighbors.append(sender_port)
+                    self.temporarily_neighbors.remove(sender_port)
                 if sender_port not in self.unidirectional_neighbors:
                     self.unidirectional_neighbors.append(sender_port)
             print(str(self.port) + " received message: ", end="")
@@ -67,8 +67,9 @@ class P2PNode:
             for neighbor_port in self.bidirectional_neighbors:
                 hello_packet = self.make_hello_packet(neighbor_port)
                 send_to(hello_packet, self.udp_ip, neighbor_port)
-            if self.pending_neighbor is not None:
-                send_to(self.make_hello_packet(self.pending_neighbor), self.udp_ip, self.pending_neighbor)
+            if len(self.bidirectional_neighbors) < MAX_NEIGHBORS: 
+                for host_port in self.unidirectional_neighbors:
+                    send_to(hello_packet, self.udp_ip, host_port)
             time.sleep(2)
 
     def delete_neighbor_timer_task(self):
@@ -80,18 +81,14 @@ class P2PNode:
     def search_for_new_neighbors_timer_task(self):
         search_start_time = 0
         while True:
-            if len()
-            # if len(self.bidirectional_neighbors) < MAX_NEIGHBORS:
-            #     random_port = self.possible_neighbors_ports[randint(0, len(self.possible_neighbors_ports) - 1)]
-            #     while random_port in self.bidirectional_neighbors:
-            #         random_port = self.possible_neighbors_ports[randint(0, len(self.possible_neighbors_ports) - 1)]
-
-            #     self.pending_neighbor = random_port
-            #     search_start_time = int(time.time())
-            #     while int(time.time()) - search_start_time < DISCONNECT_TIME_LIMIT:
-            #         if self.last_receive_time[random_port] >= search_start_time:
-            #             self.bidirectional_neighbors.append(random_port)
-            #             break
+            if len(self.bidirectional_neighbors) < MAX_NEIGHBORS:
+                if len(self.unidirectional_neighbors) > 0:
+                    send_to(self.make_hello_packet(self.unidirectional_neighbors[0]))
+                else:
+                    neighbor_port = self.possible_neighbors_ports[randint(0, len(self.possible_neighbors_ports) - 1)]
+                    if neighbor_port not in self.temporarily_neighbors:
+                        self.temporarily_neighbors.append(neighbor_port)
+                    send_to(self.make_hello_packet(neighbor_port))
             time.sleep(1)
 
     def make_hello_packet(self, dest_port):
