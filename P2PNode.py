@@ -22,8 +22,8 @@ class P2PNode:
         self.possible_neighbors_ports: list = possible_neighbors_ports
         self.possible_neighbors_ports.remove(port)
         self.server_thread = None
-        self.bidirectional_neighbors = []
-        self.unidirectional_neighbors = []
+        self.bidirectional_neighbors = [] # those we want to be neighbors with them
+        self.unidirectional_neighbors = [] # those who want to be neighbors with us
         self.temporarily_neighbors = []
         self.last_receive_time = dict()
         for port in self.possible_neighbors_ports:
