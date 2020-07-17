@@ -1,9 +1,5 @@
-import sys
-import socket
-import multiprocessing
-import threading
-import time
 import pickle
+import socket
 
 
 def send_to(obj, udp_ip, udp_port):

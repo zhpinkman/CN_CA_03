@@ -1,12 +1,8 @@
-import sys
-import socket
 import multiprocessing
-import threading
 import time
 from random import randint
 
 from P2PNode import P2PNode
-
 
 UDP_IP = "localhost"
 UDP_PORTs = [9001, 9002, 9003, 9004, 9005, 9006]  # NODES = 6

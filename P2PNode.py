@@ -1,13 +1,11 @@
-import sys
+import pickle
 import socket
-import multiprocessing
 import threading
 import time
-import pickle
-import time
 from random import randint
-from UDP_utilities import send_to
+
 from Hello import Hello
+from UDP_utilities import send_to
 
 MAX_NEIGHBORS = 3
 DISCONNECT_TIME_LIMIT = 8
