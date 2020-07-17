@@ -47,7 +47,7 @@ class P2PNode:
             if randint(0, 100) > PROB_THRESHOLD:
                 continue
             received_hello_packet: Hello = pickle.loads(data)
-            self.last_receive_time[received_hello_packet.sender_id] = int(time.time())
+            self.last_receive_time[received_hello_packet.sender_port] = int(time.time())
             print(str(self.port) + " received message: ", end="")
             print(received_hello_packet.sender_neighbors_list)
 
