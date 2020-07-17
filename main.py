@@ -9,10 +9,15 @@ from P2PNode import P2PNode
 
 UDP_IP = "localhost"
 UDP_PORTs = [9001, 9002, 9003, 9004, 9005, 9006]  # NODES = 6
+manager = multiprocessing.Manager()
+node_statuses = manager.dict()
+for port in UDP_PORTs:
+    node_statuses[port] = True
 
 
 def p2p_task(udp_ip, port):
-    p2p_node = P2PNode(udp_ip, port, UDP_PORTs)
+    p2p_node = P2PNode(udp_ip, port, UDP_PORTs, node_statuses)
+    return p2p_node
 
 
 def main():
@@ -25,8 +30,8 @@ def main():
 
     while True:
         command = input("* enter exit to quit\n")
-        print("Killing processes")
         if command == "exit":
+            print("Killing processes")
             for process in processes_list:
                 process.kill()
             break

@@ -15,8 +15,9 @@ PROB_THRESHOLD = 94
 
 
 class P2PNode:
-    def __init__(self, udp_ip, port, possible_neighbors_ports: []):
+    def __init__(self, udp_ip, port, possible_neighbors_ports: [], node_statuses):
         print("- Process on port " + str(port) + " Started")
+        self.node_statuses = node_statuses
         self.udp_ip = udp_ip
         self.port = port
         self.possible_neighbors_ports: list = possible_neighbors_ports
@@ -74,10 +75,11 @@ class P2PNode:
             time.sleep(2)
 
     def delete_neighbor_timer_task(self):
-        for neighbor_port in self.bidirectional_neighbors:
-            if int(time.time()) - self.last_receive_time[neighbor_port] >= DISCONNECT_TIME_LIMIT:
-                self.bidirectional_neighbors.remove(neighbor_port)
-        time.sleep(1)
+        while True:
+            for neighbor_port in self.bidirectional_neighbors:
+                if int(time.time()) - self.last_receive_time[neighbor_port] >= DISCONNECT_TIME_LIMIT:
+                    self.bidirectional_neighbors.remove(neighbor_port)
+            time.sleep(1)
 
     def search_for_new_neighbors_timer_task(self):
         search_start_time = 0
