@@ -7,25 +7,26 @@ from P2PNode import P2PNode
 UDP_IP = "localhost"
 UDP_PORTs = [9001, 9002, 9003, 9004, 9005, 9006]  # NODES = 6
 manager = multiprocessing.Manager()
-node_statuses = manager.dict()
-for port in UDP_PORTs:
-    node_statuses[port] = True
+node_is_running = manager.dict()
+for udp_port in UDP_PORTs:
+    node_is_running[udp_port] = True
 
 
 def p2p_task(udp_ip, port):
-    p2p_node = P2PNode(udp_ip, port, UDP_PORTs, node_statuses)
+    p2p_node = P2PNode(udp_ip, port, UDP_PORTs, node_is_running)
     return p2p_node
+
 
 def timer_task():
     counter = 0
     waiting_queue = []
     while True:
         random_port = UDP_PORTs[randint(0, 5)]
-        if node_statuses[random_port] == True:
-            node_statuses[random_port] = False
+        if node_is_running[random_port]:
+            node_is_running[random_port] = False
             waiting_queue.append((random_port, counter + 2))
         if waiting_queue[0][1] == counter:
-            node_statuses[waiting_queue[0][0]] = True
+            node_is_running[waiting_queue[0][0]] = True
             waiting_queue.pop(0)
         counter += 1
         time.sleep(10)
