@@ -69,6 +69,7 @@ class P2PNode:
                 send_to(hello_packet, self.udp_ip, neighbor_port)
             if len(self.bidirectional_neighbors) < MAX_NEIGHBORS: 
                 for host_port in self.unidirectional_neighbors:
+                    hello_packet = self.make_hello_packet(host_port)
                     send_to(hello_packet, self.udp_ip, host_port)
             time.sleep(2)
 
@@ -83,14 +84,16 @@ class P2PNode:
         while True:
             if len(self.bidirectional_neighbors) < MAX_NEIGHBORS:
                 if len(self.unidirectional_neighbors) > 0:
-                    send_to(self.make_hello_packet(self.unidirectional_neighbors[0]))
+                    send_to(self.make_hello_packet(self.unidirectional_neighbors[0]), self.udp_ip, self.unidirectional_neighbors[0]) 
+                    # send hello packet to the first host that sends us its hello packet
                 else:
                     neighbor_port = self.possible_neighbors_ports[randint(0, len(self.possible_neighbors_ports) - 1)]
                     if neighbor_port not in self.temporarily_neighbors:
                         self.temporarily_neighbors.append(neighbor_port)
-                    send_to(self.make_hello_packet(neighbor_port))
+                    send_to(self.make_hello_packet(neighbor_port), self.udp_ip, neighbor_port)
             time.sleep(1)
-
+    
+# night push akhe ? :joy
     def make_hello_packet(self, dest_port):
         epoch_time = int(time.time())
         return Hello(str(self.udp_ip) + ":" + str(self.port),
