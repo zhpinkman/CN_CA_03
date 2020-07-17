@@ -11,6 +11,7 @@ from Logger import Logger
 MAX_NEIGHBORS = 3
 DISCONNECT_TIME_LIMIT = 8
 PACKET_LOSS_PROB_THRESHOLD = 94
+RUN_DURATION = 5  # 5 minutes = 300 secs
 
 
 class P2PNode:
@@ -25,6 +26,7 @@ class P2PNode:
         self.unidirectional_neighbors = []  # those who want to be neighbors with us
         self.temporary_neighbors = []  # those we want to be neighbors with them
         self.node_logger = Logger(self.udp_ip, self.port)
+        self.destroy = False
         self.last_receive_time = dict()
         for port in self.possible_neighbors_ports:
             self.last_receive_time[port] = -1
@@ -56,7 +58,7 @@ class P2PNode:
     def server_task(self, udp_ip, port):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind((udp_ip, port))
-        while True:
+        while not self.destroy:
             if self.node_is_running[self.port]:
                 data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
                 # ignore packets with probability of less than 5 in 100
@@ -83,9 +85,15 @@ class P2PNode:
         threading.Thread(target=self.send_hello_timer_task, name='TIMER_TASK1').start()
         threading.Thread(target=self.delete_neighbor_timer_task, name='TIMER_TASK2').start()
         threading.Thread(target=self.search_for_new_neighbors_timer_task, name='TIMER_TASK3').start()
+        threading.Thread(target=self.destruction_timer_task(), name='TIMER_TASK4').start()
+
+    def destruction_timer_task(self):
+        time.sleep(RUN_DURATION)
+        print("node " + str(self.udp_ip) + ":" + str(self.port) + " destroyed!")
+        self.destroy = True
 
     def send_hello_timer_task(self):  # runs every second
-        while True:
+        while not self.destroy:
             if self.node_is_running[self.port]:
                 for neighbor_port in self.bidirectional_neighbors:
                     hello_packet = self.make_hello_packet(neighbor_port)
@@ -97,7 +105,7 @@ class P2PNode:
                 time.sleep(2)
 
     def delete_neighbor_timer_task(self):
-        while True:
+        while not self.destroy:
             if self.node_is_running[self.port]:
                 for neighbor_port in self.bidirectional_neighbors:
                     if int(time.time()) - self.last_receive_time[neighbor_port] >= DISCONNECT_TIME_LIMIT:
@@ -110,7 +118,7 @@ class P2PNode:
 
     def search_for_new_neighbors_timer_task(self):
         search_start_time = 0
-        while True:
+        while not self.destroy:
             if self.node_is_running[self.port]:
                 if int(time.time()) - search_start_time >= DISCONNECT_TIME_LIMIT:
                     self.temporary_neighbors.clear()
