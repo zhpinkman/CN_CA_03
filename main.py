@@ -3,6 +3,7 @@ import socket
 import multiprocessing
 import threading
 import time
+from random import randint
 
 from P2PNode import P2PNode
 
@@ -19,6 +20,20 @@ def p2p_task(udp_ip, port):
     p2p_node = P2PNode(udp_ip, port, UDP_PORTs, node_statuses)
     return p2p_node
 
+def timer_process():
+    counter = 0
+    waiting_queue = []
+    while True:
+        random_port = UDP_PORTs[randint(0, 5)]
+        if node_statuses[random_port] == True:
+            node_statuses[random_port] = False
+            waiting_queue.append((random_port, counter + 2))
+        if waiting_queue[0][1] == counter:
+            node_statuses[waiting_queue[0][0]] = True
+            waiting_queue.pop(0)
+        counter += 1
+        time.sleep(10)
+
 
 def main():
     print("Hi")
@@ -27,6 +42,9 @@ def main():
         process = multiprocessing.Process(target=p2p_task, args=(UDP_IP, port,))
         process.start()
         processes_list.append(process)
+    timer_process = multiprocessing.Process(target=timer_process)
+    timer_process.start()
+    processes_list.append(timer_process)
 
     while True:
         command = input("* enter exit to quit\n")
