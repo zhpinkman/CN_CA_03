@@ -21,9 +21,9 @@ class P2PNode:
         self.port = port
         self.possible_neighbors_ports: list = possible_neighbors_ports
         self.possible_neighbors_ports.remove(port)
-        self.bidirectional_neighbors = []  # those we want to be neighbors with them
+        self.bidirectional_neighbors = []  # real neighbors
         self.unidirectional_neighbors = []  # those who want to be neighbors with us
-        self.temporary_neighbors = []
+        self.temporary_neighbors = []  # those we want to be neighbors with them
         self.node_logger = Logger(self.udp_ip, self.port)
         self.last_receive_time = dict()
         for port in self.possible_neighbors_ports:
@@ -38,6 +38,21 @@ class P2PNode:
         server_thread.start()
         return server_thread
 
+    def move_host_to(self, host_port, to_move_list: list):
+        try:
+            self.bidirectional_neighbors.remove(host_port)
+        except ValueError:
+            pass
+        try:
+            self.unidirectional_neighbors.remove(host_port)
+        except ValueError:
+            pass
+        try:
+            self.temporary_neighbors.remove(host_port)
+        except ValueError:
+            pass
+        to_move_list.append(host_port)
+
     def server_task(self, udp_ip, port):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind((udp_ip, port))
@@ -50,14 +65,17 @@ class P2PNode:
                 received_hello_packet: Hello = pickle.loads(data)
                 sender_port = received_hello_packet.sender_port
                 self.last_receive_time[sender_port] = int(time.time())
-                if sender_port not in self.bidirectional_neighbors:
-                    if sender_port in self.temporary_neighbors and len(self.bidirectional_neighbors) < MAX_NEIGHBORS:
-                        self.bidirectional_neighbors.append(sender_port)
-                        self.temporary_neighbors.remove(sender_port)
-                    if sender_port not in self.unidirectional_neighbors:
-                        self.unidirectional_neighbors.append(sender_port)
-                print(str(self.port) + " received message: ", end="")
-                print(received_hello_packet.sender_neighbors_list)
+
+                if len(
+                        self.bidirectional_neighbors) < MAX_NEIGHBORS and sender_port not in self.bidirectional_neighbors:
+                    if sender_port in self.temporary_neighbors or self.port in received_hello_packet.sender_neighbors_list:
+                        self.move_host_to(sender_port, self.bidirectional_neighbors)
+                        self.print_neighbors()
+                    else:
+                        self.move_host_to(sender_port, self.unidirectional_neighbors)
+
+                # print(str(self.port) + " received message: ", end="")
+                # print(received_hello_packet.sender_neighbors_list)
             else:
                 pass
 
@@ -84,6 +102,10 @@ class P2PNode:
                 for neighbor_port in self.bidirectional_neighbors:
                     if int(time.time()) - self.last_receive_time[neighbor_port] >= DISCONNECT_TIME_LIMIT:
                         self.bidirectional_neighbors.remove(neighbor_port)
+                        self.print_neighbors()
+                for neighbor_port in self.unidirectional_neighbors:
+                    if int(time.time()) - self.last_receive_time[neighbor_port] >= DISCONNECT_TIME_LIMIT:
+                        self.unidirectional_neighbors.remove(neighbor_port)
                 time.sleep(1)
 
     def search_for_new_neighbors_timer_task(self):
@@ -111,3 +133,7 @@ class P2PNode:
                      self.bidirectional_neighbors,
                      epoch_time,
                      self.last_receive_time[dest_port])
+
+    def print_neighbors(self):
+        print(str(self.port), end=": ")
+        print(self.bidirectional_neighbors)
