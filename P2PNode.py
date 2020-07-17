@@ -23,6 +23,8 @@ class P2PNode:
         self.possible_neighbors_ports.remove(port)
         self.server_thread = None
         self.bidirectional_neighbors = []
+        self.unidirectional_neighbors = []
+        self.temporarily_neighbors = []
         self.last_receive_time = dict()
         for port in self.possible_neighbors_ports:
             self.last_receive_time[port] = -1
@@ -72,17 +74,18 @@ class P2PNode:
     def search_for_new_neighbors_timer_task(self):
         search_start_time = 0
         while True:
-            if len(self.bidirectional_neighbors) < MAX_NEIGHBORS:
-                random_port = self.possible_neighbors_ports[randint(0, len(self.possible_neighbors_ports) - 1)]
-                while random_port in self.bidirectional_neighbors:
-                    random_port = self.possible_neighbors_ports[randint(0, len(self.possible_neighbors_ports) - 1)]
+            if len()
+            # if len(self.bidirectional_neighbors) < MAX_NEIGHBORS:
+            #     random_port = self.possible_neighbors_ports[randint(0, len(self.possible_neighbors_ports) - 1)]
+            #     while random_port in self.bidirectional_neighbors:
+            #         random_port = self.possible_neighbors_ports[randint(0, len(self.possible_neighbors_ports) - 1)]
 
-                self.pending_neighbor = random_port
-                search_start_time = int(time.time())
-                while int(time.time()) - search_start_time < DISCONNECT_TIME_LIMIT:
-                    if self.last_receive_time[random_port] >= search_start_time:
-                        self.bidirectional_neighbors.append(random_port)
-                        break
+            #     self.pending_neighbor = random_port
+            #     search_start_time = int(time.time())
+            #     while int(time.time()) - search_start_time < DISCONNECT_TIME_LIMIT:
+            #         if self.last_receive_time[random_port] >= search_start_time:
+            #             self.bidirectional_neighbors.append(random_port)
+            #             break
             time.sleep(1)
 
     def make_hello_packet(self, dest_port):
