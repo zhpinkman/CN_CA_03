@@ -36,7 +36,6 @@ class P2PNode:
     def init_server(self):
         self.server_thread = threading.Thread(target=self.server_task, name='SERVER_TASK',
                                               args=(self.udp_ip, self.port,))
-        self.server_thread.daemon = True
         self.server_thread.start()
 
     def server_task(self, udp_ip, port):
@@ -60,15 +59,9 @@ class P2PNode:
             print(received_hello_packet.sender_neighbors_list)
 
     def init_timer_functions(self):
-        timer_task1 = threading.Thread(target=self.send_hello_timer_task, name='TIMER_TASK1')
-        timer_task1.daemon = True
-        timer_task1.start()
-        timer_task2 = threading.Thread(target=self.delete_neighbor_timer_task, name='TIMER_TASK2')
-        timer_task2.daemon = True
-        timer_task2.start()
-        timer_task3 = threading.Thread(target=self.search_for_new_neighbors_timer_task, name='TIMER_TASK3')
-        timer_task3.daemon = True
-        timer_task3.start()
+        threading.Thread(target=self.send_hello_timer_task, name='TIMER_TASK1').start()
+        threading.Thread(target=self.delete_neighbor_timer_task, name='TIMER_TASK2').start()
+        threading.Thread(target=self.search_for_new_neighbors_timer_task, name='TIMER_TASK3').start()
 
     def send_hello_timer_task(self):  # runs every second
         while True:

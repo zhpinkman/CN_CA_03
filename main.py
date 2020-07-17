@@ -20,7 +20,7 @@ def p2p_task(udp_ip, port):
     p2p_node = P2PNode(udp_ip, port, UDP_PORTs, node_statuses)
     return p2p_node
 
-def timer_process():
+def timer_task():
     counter = 0
     waiting_queue = []
     while True:
@@ -42,7 +42,7 @@ def main():
         process = multiprocessing.Process(target=p2p_task, args=(UDP_IP, port,))
         process.start()
         processes_list.append(process)
-    timer_process = multiprocessing.Process(target=timer_process)
+    timer_process = multiprocessing.Process(target=timer_task)
     timer_process.start()
     processes_list.append(timer_process)
 
