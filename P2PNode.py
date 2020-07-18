@@ -11,12 +11,12 @@ from config import MAX_NEIGHBORS, DISCONNECT_TIME_LIMIT, PACKET_LOSS_PROB_THRESH
 
 
 class P2PNode:
-    def __init__(self, udp_ip, port, possible_neighbors_ports: [], node_is_running):
+    def __init__(self, udp_ip, port, possible_neighbors_ports: list, node_is_running):
         print("- Process on port " + str(port) + " Started")
         self.node_is_running = node_is_running
         self.udp_ip = udp_ip
         self.port = port
-        self.possible_neighbors_ports: list = possible_neighbors_ports
+        self.possible_neighbors_ports: list = possible_neighbors_ports.copy()
         self.possible_neighbors_ports.remove(port)
         self.bidirectional_neighbors = []  # real neighbors
         self.unidirectional_neighbors = []  # those who want to be neighbors with us
@@ -52,6 +52,8 @@ class P2PNode:
         to_move_list.append(host_port)
         if to_move_list == self.bidirectional_neighbors:
             self.node_logger.log_bidirectional_neighbors(self.bidirectional_neighbors)
+        if to_move_list == self.unidirectional_neighbors:
+            self.node_logger.log_unidirectional_neighbors(self.unidirectional_neighbors)
 
     def server_task(self, udp_ip, port):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -115,6 +117,7 @@ class P2PNode:
                 for neighbor_port in self.unidirectional_neighbors:
                     if int(time.time()) - self.last_receive_time[neighbor_port] >= DISCONNECT_TIME_LIMIT:
                         self.unidirectional_neighbors.remove(neighbor_port)
+                        self.node_logger.log_unidirectional_neighbors(self.unidirectional_neighbors)
                 time.sleep(1)
 
     def search_for_new_neighbors_timer_task(self):

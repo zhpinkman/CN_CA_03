@@ -3,10 +3,7 @@ import time
 from random import randint
 
 from P2PNode import P2PNode
-from config import RUN_DURATION
-
-UDP_IP = "localhost"
-UDP_PORTs = [9001, 9002, 9003, 9004, 9005, 9006]  # NODES = 6
+from config import RUN_DURATION, UDP_PORTs, UDP_IP
 
 
 def p2p_task(udp_ip, port, node_is_running):
@@ -30,7 +27,6 @@ def timer_task(node_is_running):
         time.sleep(10)
 
 
-
 def main():
     print("Hi")
     node_is_running = multiprocessing.Manager().dict()
@@ -42,7 +38,7 @@ def main():
         process = multiprocessing.Process(target=p2p_task, args=(UDP_IP, port, node_is_running))
         process.start()
         processes_list.append(process)
-    timer_process = multiprocessing.Process(target=timer_task, args=(node_is_running, ))
+    timer_process = multiprocessing.Process(target=timer_task, args=(node_is_running,))
     timer_process.start()
     processes_list.append(timer_process)
 
