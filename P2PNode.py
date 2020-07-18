@@ -99,6 +99,7 @@ class P2PNode:
             if self.node_is_running[self.port]:
                 for neighbor_port in self.bidirectional_neighbors:
                     hello_packet = self.make_hello_packet(neighbor_port)
+                    self.node_logger.log_sent_hello_to_neighbor(neighbor_port)
                     send_to(hello_packet, self.udp_ip, neighbor_port)
                 if len(self.bidirectional_neighbors) < MAX_NEIGHBORS:
                     for host_port in set().union(self.unidirectional_neighbors, self.temporary_neighbors):

@@ -6,7 +6,7 @@ def truncate(s):
     return (s[:9] + '.') if len(s) > 9 else s
 
 
-def draw_graph(edges_dict: dict):
+def draw_graph(edges_dict: dict, nodes: list):
     # ------- DIRECTED
 
     # Build a dataframe with your connections
@@ -21,6 +21,8 @@ def draw_graph(edges_dict: dict):
                 red_edges.append((from_node, to_node))
 
     G = nx.DiGraph(directed=True)
+    for n in nodes:
+        G.add_node(n)
     G.add_edges_from(edges)
     black_edges = [edge for edge in G.edges()]
 
@@ -32,5 +34,5 @@ def draw_graph(edges_dict: dict):
     nx.draw_networkx_labels(G, pos, font_size=8, font_weight="bold")
     nx.draw_networkx_edges(G, pos, edgelist=red_edges, edge_color="r", arrows=True, width=4, alpha=0.5)
     nx.draw_networkx_edges(G, pos, edgelist=black_edges, arrows=True, alpha=0.9)
-    plt.margins(0.1, 0.1)
+    plt.margins(0.15, 0.15)
     return plt
