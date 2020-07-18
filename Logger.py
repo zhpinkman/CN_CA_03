@@ -42,4 +42,5 @@ class Logger:
         while not self.destroy:
             time.sleep(1)
             for node_port in self.current_bidirectional_neighbors:
-                self.nodes_available_time[node_port] = self.nodes_available_time.setdefault(node_port, 0) + 1
+                node_id = str(self.ip) + ":" + str(node_port)
+                self.nodes_available_time[node_id] = self.nodes_available_time.setdefault(node_id, 0) + 1
