@@ -11,7 +11,7 @@ from Logger import Logger
 MAX_NEIGHBORS = 3
 DISCONNECT_TIME_LIMIT = 8
 PACKET_LOSS_PROB_THRESHOLD = 94
-RUN_DURATION = 5  # 5 minutes = 300 secs
+RUN_DURATION = 10  # 5 minutes = 300 secs
 
 
 class P2PNode:
@@ -54,6 +54,8 @@ class P2PNode:
         except ValueError:
             pass
         to_move_list.append(host_port)
+        if to_move_list == self.bidirectional_neighbors:
+            self.node_logger.log_bidirectional_neighbors(self.bidirectional_neighbors)
 
     def server_task(self, udp_ip, port):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -65,6 +67,7 @@ class P2PNode:
                 if randint(0, 100) > PACKET_LOSS_PROB_THRESHOLD:
                     continue
                 received_hello_packet: Hello = pickle.loads(data)
+                self.node_logger.log_received_hello(received_hello_packet)
                 sender_port = received_hello_packet.sender_port
                 self.last_receive_time[sender_port] = int(time.time())
 
@@ -90,6 +93,7 @@ class P2PNode:
     def destruction_timer_task(self):
         time.sleep(RUN_DURATION)
         print("node " + str(self.udp_ip) + ":" + str(self.port) + " destroyed!")
+        self.node_logger.terminate(RUN_DURATION)
         self.destroy = True
 
     def send_hello_timer_task(self):  # runs every second
@@ -110,6 +114,7 @@ class P2PNode:
                 for neighbor_port in self.bidirectional_neighbors:
                     if int(time.time()) - self.last_receive_time[neighbor_port] >= DISCONNECT_TIME_LIMIT:
                         self.bidirectional_neighbors.remove(neighbor_port)
+                        self.node_logger.log_bidirectional_neighbors(self.bidirectional_neighbors)
                         self.print_neighbors()
                 for neighbor_port in self.unidirectional_neighbors:
                     if int(time.time()) - self.last_receive_time[neighbor_port] >= DISCONNECT_TIME_LIMIT:
