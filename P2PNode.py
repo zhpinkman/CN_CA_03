@@ -7,11 +7,7 @@ from random import randint
 from Hello import Hello
 from UDP_utilities import send_to
 from Logger import Logger
-
-MAX_NEIGHBORS = 3
-DISCONNECT_TIME_LIMIT = 8
-PACKET_LOSS_PROB_THRESHOLD = 94
-RUN_DURATION = 10  # 5 minutes = 300 secs
+from config import MAX_NEIGHBORS, DISCONNECT_TIME_LIMIT, PACKET_LOSS_PROB_THRESHOLD, RUN_DURATION
 
 
 class P2PNode:

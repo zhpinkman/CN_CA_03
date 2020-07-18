@@ -3,6 +3,7 @@ import time
 from random import randint
 
 from P2PNode import P2PNode
+from config import RUN_DURATION
 
 UDP_IP = "localhost"
 UDP_PORTs = [9001, 9002, 9003, 9004, 9005, 9006]  # NODES = 6
@@ -16,7 +17,7 @@ def p2p_task(udp_ip, port, node_is_running):
 def timer_task(node_is_running):
     counter = 0
     waiting_queue = []
-    while True:
+    while counter * 10 < RUN_DURATION:
         random_port = UDP_PORTs[randint(0, 5)]
         if node_is_running[random_port]:
             node_is_running[random_port] = False
