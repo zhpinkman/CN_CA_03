@@ -15,6 +15,7 @@ def timer_task(node_is_running):
     counter = 0
     waiting_queue = []
     while counter * 10 < RUN_DURATION:
+        print("Time passed: " + str(counter*10) + "s/" + str(RUN_DURATION) + "s")
         random_port = UDP_PORTs[randint(0, 5)]
         if node_is_running[random_port]:
             node_is_running[random_port] = False

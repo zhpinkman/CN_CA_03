@@ -108,24 +108,24 @@ class P2PNode:
 
     def delete_neighbor_timer_task(self):
         while not self.destroy:
-            if self.node_is_running[self.port]:
-                for neighbor_port in self.bidirectional_neighbors:
-                    if int(time.time()) - self.last_receive_time[neighbor_port] >= DISCONNECT_TIME_LIMIT:
-                        self.bidirectional_neighbors.remove(neighbor_port)
-                        self.node_logger.log_bidirectional_neighbors(self.bidirectional_neighbors)
-                        self.print_neighbors()
-                for neighbor_port in self.unidirectional_neighbors:
-                    if int(time.time()) - self.last_receive_time[neighbor_port] >= DISCONNECT_TIME_LIMIT:
-                        self.unidirectional_neighbors.remove(neighbor_port)
-                        self.node_logger.log_unidirectional_neighbors(self.unidirectional_neighbors)
-                time.sleep(1)
+            # if self.node_is_running[self.port]:
+            for neighbor_port in self.bidirectional_neighbors:
+                if int(time.time()) - self.last_receive_time[neighbor_port] >= DISCONNECT_TIME_LIMIT:
+                    self.bidirectional_neighbors.remove(neighbor_port)
+                    self.node_logger.log_bidirectional_neighbors(self.bidirectional_neighbors)
+                    self.print_neighbors()
+            for neighbor_port in self.unidirectional_neighbors:
+                if int(time.time()) - self.last_receive_time[neighbor_port] >= DISCONNECT_TIME_LIMIT:
+                    self.unidirectional_neighbors.remove(neighbor_port)
+                    self.node_logger.log_unidirectional_neighbors(self.unidirectional_neighbors)
+            time.sleep(1)
 
     def search_for_new_neighbors_timer_task(self):
         search_start_time = 0
         while not self.destroy:
+            if int(time.time()) - search_start_time >= DISCONNECT_TIME_LIMIT:
+                self.temporary_neighbors.clear()
             if self.node_is_running[self.port]:
-                if int(time.time()) - search_start_time >= DISCONNECT_TIME_LIMIT:
-                    self.temporary_neighbors.clear()
                 if len(self.bidirectional_neighbors) < MAX_NEIGHBORS and len(self.temporary_neighbors) == 0:
                     neighbor_port = self.possible_neighbors_ports[randint(0, len(self.possible_neighbors_ports) - 1)]
                     self.temporary_neighbors.append(neighbor_port)
@@ -133,7 +133,7 @@ class P2PNode:
                     # send_to(self.make_hello_packet(neighbor_port), self.udp_ip, neighbor_port)
                     # send_hello_timer_task will do it
 
-                time.sleep(1)
+            time.sleep(1)
 
     # night push akhe ? :joy
     def make_hello_packet(self, dest_port):

@@ -4,8 +4,8 @@ from pathlib import Path
 import json
 
 from Hello import Hello
-from config import UDP_PORTs
-
+from config import UDP_PORTs, DISCONNECT_TIME_LIMIT
+from graph import draw_graph
 RESULT_FOLDER = "RESULTS"
 
 
@@ -18,10 +18,13 @@ class Logger:
         self.nodes_available_time = dict()
         self.destroy = False
         self.topology = dict()
+        self.topology_last_update_time = dict()
         for port1 in UDP_PORTs:
             self.topology[self.make_node_id(port1)] = dict()
+            self.topology_last_update_time[self.make_node_id(port1)] = dict()
             for port2 in UDP_PORTs:
                 self.topology[self.make_node_id(port1)][self.make_node_id(port2)] = False
+                self.topology_last_update_time[self.make_node_id(port1)][self.make_node_id(port2)] = int(time.time())
 
         self.timer_thread = threading.Thread(target=self.logger_timer_task, name='LOGGER_TIMER_TASK')
         self.timer_thread.start()
@@ -31,6 +34,8 @@ class Logger:
             if port in hello_packet.sender_neighbors_list:
                 self.topology[self.make_node_id(hello_packet.sender_port)][self.make_node_id(port)] = True
                 self.topology[self.make_node_id(port)][self.make_node_id(hello_packet.sender_port)] = True
+                self.topology_last_update_time[self.make_node_id(hello_packet.sender_port)][self.make_node_id(port)] = int(time.time())
+                self.topology_last_update_time[self.make_node_id(port)][self.make_node_id(hello_packet.sender_port)] = int(time.time())
             else:
                 self.topology[self.make_node_id(hello_packet.sender_port)][self.make_node_id(port)] = False
                 self.topology[self.make_node_id(port)][self.make_node_id(hello_packet.sender_port)] = False
@@ -58,7 +63,7 @@ class Logger:
         self.wrap_up_2_current_neighbors(path)
         self.wrap_up_3_available_time(path)
         self.wrap_up_4_topology(path)
-        
+
     def wrap_up_2_current_neighbors(self, path):
         ip_port_list = []
         for port in self.current_bidirectional_neighbors:
@@ -71,13 +76,27 @@ class Logger:
             available_file.write(json.dumps(self.nodes_available_time))
 
     def wrap_up_4_topology(self, path):
+        for port1 in UDP_PORTs:
+            for port2 in UDP_PORTs:
+                elapsed_time = int(time.time()) - self.topology_last_update_time[self.make_node_id(port1)][self.make_node_id(port2)]
+                if elapsed_time >= DISCONNECT_TIME_LIMIT:
+                    self.topology[self.make_node_id(port1)][self.make_node_id(port2)] = False
+                    self.topology[self.make_node_id(port2)][self.make_node_id(port1)] = False
+
         for uni_port in self.current_unidirectional_neighbors:
             self.topology[self.make_node_id(uni_port)][self.make_node_id(self.port)] = True
-        for bi_port in self.current_bidirectional_neighbors:
-            self.topology[self.make_node_id(bi_port)][self.make_node_id(self.port)] = True
-            self.topology[self.make_node_id(self.port)][self.make_node_id(bi_port)] = True
+
+        for port in UDP_PORTs:
+            if port in self.current_bidirectional_neighbors:
+                self.topology[self.make_node_id(port)][self.make_node_id(self.port)] = True
+                self.topology[self.make_node_id(self.port)][self.make_node_id(port)] = True
+            else:
+                self.topology[self.make_node_id(self.port)][self.make_node_id(port)] = False
+
         with open(path + "/4_topology.json", "w") as available_file:
             available_file.write(json.dumps(self.topology))
+        plt = draw_graph(self.topology)
+        plt.savefig(path + "/4_topology.png", bbox_inches='tight')
 
     def make_node_id(self, port):
         return str(self.ip) + ":" + str(port)
