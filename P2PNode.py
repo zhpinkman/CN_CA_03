@@ -69,8 +69,7 @@ class P2PNode:
                 sender_port = received_hello_packet.sender_port
                 self.last_receive_time[sender_port] = int(time.time())
 
-                if len(
-                        self.bidirectional_neighbors) < MAX_NEIGHBORS and sender_port not in self.bidirectional_neighbors:
+                if len(self.bidirectional_neighbors) < MAX_NEIGHBORS and sender_port not in self.bidirectional_neighbors:
                     if sender_port in self.temporary_neighbors or self.port in received_hello_packet.sender_neighbors_list:
                         self.move_host_to(sender_port, self.bidirectional_neighbors)
                         self.print_neighbors()
